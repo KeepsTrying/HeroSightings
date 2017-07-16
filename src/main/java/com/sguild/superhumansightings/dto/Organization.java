@@ -19,7 +19,7 @@ public class Organization {
 
     private String organizationDescription;
 
-    private Location orginizationLocation;
+    private int orginizationLocationId;
 
     private List<Membership> members;
 
@@ -47,12 +47,12 @@ public class Organization {
         this.organizationDescription = organizationDescription;
     }
 
-    public Location getOrginizationLocation() {
-        return orginizationLocation;
+    public int getOrginizationLocationId() {
+        return orginizationLocationId;
     }
 
-    public void setOrginizationLocation(Location orginizationLocation) {
-        this.orginizationLocation = orginizationLocation;
+    public void setOrginizationLocationId(int orginizationLocationId) {
+        this.orginizationLocationId = orginizationLocationId;
     }
 
     public List<Membership> getMembers() {

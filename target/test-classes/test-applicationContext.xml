@@ -43,4 +43,12 @@
         <property name="jdbcTemplate" ref="jdbcTemplate"/>
     </bean>
     
+    <bean id="organizationsDao" class="com.sguild.superhumansightings.dao.OrganizationsDaoImpl">
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    </bean>
+    
+    <bean id="sightingsDao" class="com.sguild.superhumansightings.dao.SightingsDaoImpl">
+        <property name="jdbcTemplate" ref="jdbcTemplate"/>
+    </bean>
+    
 </beans>

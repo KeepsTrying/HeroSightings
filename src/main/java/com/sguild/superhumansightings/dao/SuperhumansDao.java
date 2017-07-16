@@ -19,11 +19,15 @@ public interface SuperhumansDao {
     
     public List<Superpower> getAllSuperpowers();
     
-    public List<Superpower> getSuperpowersForHero(int superheroId);
+    public List<Superpower> getSuperpowersForSuperhuman(int superheroId);
     
     public Superpower getSuperpower(int superpowerId);
     
-    public Superpower addSuperpower(Superpower superpower);
+    public Superpower addSuperpower(String superpower);
+    
+    public void giveSuperhumanSuperpower(int superhumanId, int superpowerId);
+    
+    public void removeSuperhumansSuperpower (int superhumanId, int superpowerId);
     
     public void updateSuperpower(Superpower superpower);
     
@@ -39,13 +43,15 @@ public interface SuperhumansDao {
     
     public void deleteSuperhuman(int superId);
     
-    public List<Membership> getMembershipsOfHero(Superhuman superhuman);
+    public List<Superhuman> getAllSuperhumansWithSuperpower(Superpower superpower);
+    
+    public List<Membership> getMembershipsOfSuperhuman(Superhuman superhuman);
     
     public List<Membership> getMembershipsOfOrganization(Organization organization);
     
     public Membership getMembership(int organizationId, int superhumanId);
     
-    public void updateMembership(Membership membership);
+    public void assignSuperhumanToOrganization(Superhuman superhuman, Organization organization);
     
     public void deleteMembership(Membership membership);
     

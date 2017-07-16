@@ -14,6 +14,8 @@ import java.sql.SQLException;
 import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  *
@@ -82,13 +84,14 @@ public class SuperhumansDaoImpl implements SuperhumansDao {
     //-------------------------------------------------------------------------------------------------------
     
     private static final String SQL_GET_HERO_SUPERPOWERS
-            = "SELECT SuperpowerId, Superpower FROM "
+            = "SELECT SuperpowerId, Superpower "
+            + "FROM Superpowers "
             + "LEFT JOIN SupersSuperpowers USING (SuperpowerId) "
-            + "LEFT JOIN HeroesAndVillains USING (SuperID)"
+            + "INNER JOIN HeroesAndVillains USING (SuperID) "
             + "WHERE SuperId = ?";
     
     @Override
-    public List<Superpower> getSuperpowersForHero(int superheroId) {
+    public List<Superpower> getSuperpowersForSuperhuman(int superheroId) {
         List<Superpower> thisHeroesPowers = jdbcTemplate.query(SQL_GET_HERO_SUPERPOWERS, new SuperpowerMapper(), superheroId);
         return thisHeroesPowers;
     }
@@ -103,11 +106,11 @@ public class SuperhumansDaoImpl implements SuperhumansDao {
     //-------------------------------------------------------------------------------------------------------
     
     private static final String SQL_GET_SUPERPOWER
-            = "SELECT * FROM SUPERPOWERS WHERE SuperpowerId = ?";
+            = "SELECT * FROM Superpowers WHERE SuperpowerId = ?";
     
     @Override
     public Superpower getSuperpower(int superpowerId) {
-        Superpower superpower = jdbcTemplate.queryForObject(SQL_GET_SUPERPOWER, new SuperpowerMapper(), Integer.class);
+        Superpower superpower = jdbcTemplate.queryForObject(SQL_GET_SUPERPOWER, new SuperpowerMapper(), superpowerId);
         return superpower;
     }
 
@@ -119,23 +122,65 @@ public class SuperhumansDaoImpl implements SuperhumansDao {
     
     //-------------------------------------------------------------------------------------------------------
     private static final String SQL_ADD_SUPERPOWER
-            = "INSERT INTO Superpowers (Superpower)";
+            = "INSERT INTO Superpowers (Superpower) "
+            + "VALUES (?);";
     
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public Superpower addSuperpower(Superpower superpower) {
+    public Superpower addSuperpower(String superpower) {
+        Superpower newSuperpower = new Superpower();
+        newSuperpower.setSuperpower(superpower);
         jdbcTemplate.update(SQL_ADD_SUPERPOWER,
-                superpower.getSuperpower());
+                superpower);
         
-        int superpowerId = jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Integer.class);
-        superpower.setSuperpowerId(superpowerId);
+        int superpowerId = jdbcTemplate.queryForObject(MYSQL_LAST_ID, Integer.class);
+        newSuperpower.setSuperpowerId(superpowerId);
         
-        return superpower;
+        return newSuperpower;
     }
 
     //-------------------------------------------------------------------------------------------------------
+
+
     
     
     
+    
+    //-------------------------------------------------------------------------------------------------------
+    
+    private static final String SQL_ADD_SUPERPOWER_TO_SUPERHUMAN
+            = "INSERT INTO SupersSuperpowers (SuperId, SuperpowerId) "
+            + "VALUES (?, ?)";
+    
+    @Override
+    public void giveSuperhumanSuperpower(int superhumanId, int superpowerId) {
+        jdbcTemplate.update(SQL_ADD_SUPERPOWER_TO_SUPERHUMAN, superhumanId, superpowerId);
+    }
+    
+    
+    //-------------------------------------------------------------------------------------------------------
+    
+
+
+    
+    
+
+    //-------------------------------------------------------------------------------------------------------
+    
+    private static final String SQL_REMOVE_SUPERPOWER_FROM_SUPERHUMAN
+            = "DELETE FROM SupersSuperpowers "
+            + "WHERE SuperId = ? AND SuperpowerId = ?;";
+    
+    @Override
+    public void removeSuperhumansSuperpower (int superhumanId, int superpowerId) {
+        jdbcTemplate.update(SQL_REMOVE_SUPERPOWER_FROM_SUPERHUMAN, superhumanId, superpowerId);
+    }
+    
+    
+    //-------------------------------------------------------------------------------------------------------
+
+
+
     
     
     
@@ -156,16 +201,22 @@ public class SuperhumansDaoImpl implements SuperhumansDao {
     //-------------------------------------------------------------------------------------------------------
     
     
-    
+ 
     
     
     
     //-------------------------------------------------------------------------------------------------------
-    private static final String SQL_DELETE_SUPERPOWER
-            = "DELETE FROM Superpowers WHERE SuperpowerId = ?";
     
+    private static final String SQL_REMOVE_SUPERPOWER_FROM_SUPERHUMANS
+            = "DELETE FROM SupersSuperpowers WHERE SuperpowerId = ?;";
+    
+    private static final String SQL_DELETE_SUPERPOWER
+            = "DELETE FROM Superpowers WHERE SuperpowerId = ?;";
+    
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public void deleteSuperpower(int superpowerId) {
+        jdbcTemplate.update(SQL_REMOVE_SUPERPOWER_FROM_SUPERHUMANS, superpowerId);
         jdbcTemplate.update(SQL_DELETE_SUPERPOWER, superpowerId);
     }
     
@@ -240,6 +291,7 @@ public class SuperhumansDaoImpl implements SuperhumansDao {
             = "INSERT INTO HeroesAndVillains (SuperName, Alias, Cover, IsVillain) "
             + "VALUES (?, ?, ?, ?)";
     
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public Superhuman addSuperhuman(Superhuman superhuman) {
         String handle = superhuman.getHandle();
@@ -269,11 +321,11 @@ public class SuperhumansDaoImpl implements SuperhumansDao {
     //-------------------------------------------------------------------------------------------------------
     
     private static final String SQL_UPDATE_SUPERHUMAN
-            = "UPDATE HeroesAndVillains SET"
-            + "SuperName = ?"
-            + "Alias = ?"
-            + "Cover = ?"
-            + "IsVillain = ?"
+            = "UPDATE HeroesAndVillains SET "
+            + "SuperName = ?, "
+            + "Alias = ?, "
+            + "Cover = ?, "
+            + "IsVillain = ? "
             + "WHERE SuperId = ?";
     
     @Override
@@ -301,16 +353,50 @@ public class SuperhumansDaoImpl implements SuperhumansDao {
     
     //-------------------------------------------------------------------------------------------------------
     
+    private static final String SQL_DELETE_ALL_SUPERPOWERS_OF_SUPERHUMAN
+            = "DELETE FROM SupersSuperpowers WHERE SuperId = ?;";
+            
+    private static final String SQL_DELETE_ALL_SIGHTINGS_OF_SUPERHUMAN
+            = "DELETE FROM SupersSightings WHERE SuperId = ?;";
+                    
+    private static final String SQL_DELETE_ALL_MEMBERSHIPS_OF_SUPERHUMAN
+            = "DELETE FROM OrganizationsSupers WHERE SuperId = ?;";
+    
     private static final String SQL_DELETE_SUPERHUMAN
             = "DELETE FROM HeroesAndVillains WHERE SuperId = ?";
     
+    @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public void deleteSuperhuman(int superId) {
+        jdbcTemplate.update(SQL_DELETE_ALL_SUPERPOWERS_OF_SUPERHUMAN, superId);
+        jdbcTemplate.update(SQL_DELETE_ALL_SIGHTINGS_OF_SUPERHUMAN, superId);
+        jdbcTemplate.update(SQL_DELETE_ALL_MEMBERSHIPS_OF_SUPERHUMAN, superId);
         jdbcTemplate.update(SQL_DELETE_SUPERHUMAN, superId);
     }
     
     //-------------------------------------------------------------------------------------------------------
     
+    
+    
+
+    
+    
+    //-------------------------------------------------------------------------------------------------------
+
+    private static final String SQL_GET_ALL_SUPERHUMANS_WITH_SUPERPOWER
+            = "SELECT SuperId, SuperName, Alias, Cover, isVillain "
+            + "FROM HeroesAndVillains "
+            + "LEFT JOIN SupersSuperpowers USING (SuperId) "
+            + "LEFT JOIN Superpowers USING (SuperpowerId) "
+            + "WHERE SuperpowerId = ?";
+    
+    @Override
+    public List<Superhuman> getAllSuperhumansWithSuperpower(Superpower superpower) {
+    List<Superhuman> superhumans = jdbcTemplate.query(SQL_GET_ALL_SUPERHUMANS_WITH_SUPERPOWER, new SuperhumanMapper(), superpower.getSuperpowerId());
+        return superhumans;
+    }
+    //-------------------------------------------------------------------------------------------------------
+
     
     
     
@@ -365,14 +451,14 @@ public class SuperhumansDaoImpl implements SuperhumansDao {
     //-------------------------------------------------------------------------------------------------------
     
     private static final String SQL_GET_MEMBERSHIPS_FOR_HERO
-            = "SELECT OrganizationId, Name, SuperId, SuperName"
-            + "FROM Organizations"
-            + "LEFT JOIN OrganizationsSupers USING (OrganizationId)"
-            + "LEFT JOIN HeroesAndVillains USING (SuperId)"
+            = "SELECT OrganizationId, Name, SuperId, SuperName "
+            + "FROM Organizations "
+            + "LEFT JOIN OrganizationsSupers USING (OrganizationId) "
+            + "LEFT JOIN HeroesAndVillains USING (SuperId) "
             + "WHERE SuperId = ?;";
     
     @Override
-    public List<Membership> getMembershipsOfHero(Superhuman superhuman) {
+    public List<Membership> getMembershipsOfSuperhuman(Superhuman superhuman) {
         List<Membership> superhumansMemberships = jdbcTemplate.query(SQL_GET_MEMBERSHIPS_FOR_HERO,
                                                     new MembershipMapper(), 
                                                     superhuman.getSuperhumanId());
@@ -393,11 +479,11 @@ public class SuperhumansDaoImpl implements SuperhumansDao {
     //-------------------------------------------------------------------------------------------------------
     
     private static final String SQL_GET_MEMBERSHIPS_FOR_ORGANIZATION
-            = "= \"SELECT OrganizationId, Name, SuperId, SuperName\"\n" +
-"            + \"FROM Organizations\"\n" +
-"            + \"LEFT JOIN OrganizationsSupers USING (OrganizationId)\"\n" +
-"            + \"LEFT JOIN HeroesAndVillains USING (SuperId)\"\n" +
-"            + \"WHERE OrganizationId = ?;\";";
+            = "SELECT OrganizationId, Name, SuperId, SuperName "
+            + "FROM Organizations "  
+            + "LEFT JOIN OrganizationsSupers USING (OrganizationId) "
+            + "LEFT JOIN HeroesAndVillains USING (SuperId) "
+            + "WHERE OrganizationId = ?;";
     
     @Override
     public List<Membership> getMembershipsOfOrganization(Organization organization) {
@@ -419,10 +505,10 @@ public class SuperhumansDaoImpl implements SuperhumansDao {
     //-------------------------------------------------------------------------------------------------------
     
     private static final String SQL_GET_MEMBERSHIP
-            = "SELECT OrganizationId, Name, SuperId, SuperName"
-            + "FROM Organizations"
-            + "LEFT JOIN OrganizationsSupers USING (OrganizationId)"
-            + "LEFT JOIN HeroesAndVillains USING (SuperId)"
+            = "SELECT OrganizationId, Name, SuperId, SuperName "
+            + "FROM Organizations "
+            + "LEFT JOIN OrganizationsSupers USING (OrganizationId) "
+            + "LEFT JOIN HeroesAndVillains USING (SuperId) "
             + "WHERE OrganizationId = ? AND SuperId = ?;";
     
     @Override
@@ -445,22 +531,18 @@ public class SuperhumansDaoImpl implements SuperhumansDao {
     
     //-------------------------------------------------------------------------------------------------------
     
-    private static final String SQL_UPDATE_MEMBERSHIP
-            = "UPDATE OrganizationsSupers SET"
-            + "OrganizationId = ?"
-            + "Name = ?"
-            + "SuperId = ?"
-            + "SuperName = ?"
-            + "WHERE OrganizaionId = ? AND SuperId = ?";
+    private static final String SQL_ADD_MEMBERSHIP
+            = "INSERT INTO OrganizationsSupers (OrganizationId, SuperId) "
+            + "VALUES (?, ?);";
+//            + "OrganizationId = ?, "
+//            + "SuperId = ? "
+//            + "WHERE OrganizationId = ? AND SuperId = ?";
     
     @Override
-    public void updateMembership(Membership membership) {
-        jdbcTemplate.update(SQL_UPDATE_MEMBERSHIP,
-                membership.getOrganizationId(),
-                membership.getOrganizationName(),
-                membership.getMemberId(),
-                membership.getOrganizationName(),
-                membership.getOrganizationId(), membership.getMemberId());
+    public void assignSuperhumanToOrganization(Superhuman superhuman, Organization organization) {
+        jdbcTemplate.update(SQL_ADD_MEMBERSHIP,
+                organization.getOrganizationId(),
+                superhuman.getSuperhumanId());
     }
     
     //-------------------------------------------------------------------------------------------------------

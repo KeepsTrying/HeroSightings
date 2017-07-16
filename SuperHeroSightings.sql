@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `SuperheroSightings`.`OrganizationsSupers` (
 DROP TABLE IF EXISTS `SuperheroSightings`.`Sightings` ;
 
 CREATE TABLE IF NOT EXISTS `SuperheroSightings`.`Sightings` (
-  `SightingId` INT NOT NULL,
+  `SightingId` INT NOT NULL AUTO_INCREMENT,
   `LocationId` INT NOT NULL,
   `SightingDate` DATE NULL,
   PRIMARY KEY (`SightingId`),

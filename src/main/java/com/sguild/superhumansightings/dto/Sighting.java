@@ -13,13 +13,13 @@ import java.util.Map;
  * @author apprentice
  */
 public class Sighting {
-    
+
     private int sightingId;
-    
-    private Location location;
-    
+
+    private int locationId;
+
     private LocalDate date;
-    
+
     private Map<Integer, Superhuman> sighted;
 
     public int getSightingId() {
@@ -30,12 +30,12 @@ public class Sighting {
         this.sightingId = sightingId;
     }
 
-    public Location getLocation() {
-        return location;
+    public int getLocationId() {
+        return locationId;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setLocationId(int locationId) {
+        this.locationId = locationId;
     }
 
     public LocalDate getDate() {
@@ -53,6 +53,5 @@ public class Sighting {
     public void setSighted(Map<Integer, Superhuman> sighted) {
         this.sighted = sighted;
     }
-    
-    
+
 }

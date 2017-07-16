@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
-Test set: com.sguild.superhumansightings.dao.LocationDaoImplTest
+Test set: com.sguild.superhumansightings.dao.SuperhumansDaoImplTest
 -------------------------------------------------------------------------------
-Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.999 sec
+Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.87 sec

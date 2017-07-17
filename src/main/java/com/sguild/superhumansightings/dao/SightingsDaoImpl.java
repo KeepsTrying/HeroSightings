@@ -47,6 +47,21 @@ public class SightingsDaoImpl implements SightingsDao {
     
     
     
+    //-------------------------------------------------------------------------------------------------------
+    
+    private static final String SQL_GET_RECENT_SIGHTINGS
+            = "SELECT * FROM Sightings ORDER BY SightingDate DESC LIMIT 10;";
+    
+    @Override
+    public List<Sighting> getRecentSightings(){
+        List<Sighting> sightings = jdbcTemplate.query(SQL_GET_RECENT_SIGHTINGS, new SightingMapper());
+        return sightings;
+    }
+    
+    //-------------------------------------------------------------------------------------------------------
+    
+    
+    
     
     //-------------------------------------------------------------------------------------------------------
     

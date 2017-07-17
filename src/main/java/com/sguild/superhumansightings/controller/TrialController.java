@@ -5,8 +5,8 @@
  */
 package com.sguild.superhumansightings.controller;
 
-import com.sguild.superhumansightings.dao.LocationDao;
-import com.sguild.superhumansightings.dto.Location;
+import com.sguild.superhumansightings.dto.Sighting;
+import com.sguild.superhumansightings.servicelayer.Service;
 import java.util.List;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -22,22 +22,22 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class TrialController {
     
-    private LocationDao locationDao;
+    private Service service;
     
     @Inject
-    public TrialController(LocationDao dao) {
-        this.locationDao = dao;
+    public TrialController(Service service) {
+        this.service = service;
     }
     
     
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String trying(HttpServletRequest request, Model model) {
         
-        List<Location> locations = locationDao.getAllLocations();
+        List<Sighting> recentSightings = service.getRecentSightings();
         
-        model.addAttribute("locations", locations);
+        model.addAttribute("sightings", recentSightings);
         
-        return "trialpage";
+        return "landing";
     }
     
 }

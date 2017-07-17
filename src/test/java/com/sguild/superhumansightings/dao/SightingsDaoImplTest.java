@@ -174,7 +174,6 @@ public class SightingsDaoImplTest {
         dao.updateSighting(sighting);
         Sighting updatedSighting = dao.getSighting(1);
         Assert.assertTrue(newDate.compareTo(updatedSighting.getDate()) == 0);
-        
     }
 
     /**

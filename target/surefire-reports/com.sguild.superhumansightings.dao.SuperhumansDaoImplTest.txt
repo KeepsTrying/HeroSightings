@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.sguild.superhumansightings.dao.SuperhumansDaoImplTest
 -------------------------------------------------------------------------------
-Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.87 sec
+Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.495 sec

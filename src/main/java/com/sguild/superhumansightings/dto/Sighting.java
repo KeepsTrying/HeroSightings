@@ -17,6 +17,8 @@ public class Sighting {
     private int sightingId;
 
     private int locationId;
+    
+    private Location location;
 
     private LocalDate date;
 
@@ -36,6 +38,14 @@ public class Sighting {
 
     public void setLocationId(int locationId) {
         this.locationId = locationId;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
     }
 
     public LocalDate getDate() {
